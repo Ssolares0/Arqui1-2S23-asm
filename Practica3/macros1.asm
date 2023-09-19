@@ -17,24 +17,28 @@ getChar macro ;obtener caracter
     int 21h
 endm
 
-ObtenerTexto macro cadena ;macro para recibir una cadena, varios caracteres 
-
-LOCAL ObtenerChar, endTexto 
-;si, cx, di  registros que usualmente se usan como contadores 
-    xor di,di  ; => mov si, 0  reinica el contador
+;ObtenerTexto macro cadena ;macro para recibir una cadena, varios caracteres 
+ObtenerTexto macro arreglo
+LOCAL ObtenerChar, endText
+    xor si,si
 
     ObtenerChar:
-        getChar  ;llamamos al método de obtener caracter 
-        cmp al, 0dh ; como se guarda en al, comparo si al es igual a salto de línea, ascii de salto de linea en hexadecimal o 10en ascii
-        je endTexto ;si es igual que el salto de línea, nos vamos a la etiqueta endTexto, donde agregamos el $ de dolar a la entrada 
-        mov cadena[di],al ; mov destino, fuente.  Vamos copiando el ascii del caracter que se guardó en al, al vector cadena en la posicion del contador si
-        inc di ; => si = si+1
+        getChar
+        cmp al,13
+        je endText
+            
+        mov arreglo[si],al
+
+        inc si
         jmp ObtenerChar
 
-    endTexto:
-        mov al, 36 ;ascii del signo $ o en hexadecimal 24h
-        mov cadena[di],al  ;copiamos el $ a la cadena
-endm 
+    endText:
+        mov al,36
+        mov arreglo[si], al    
+
+endm
+
+
 
 clear macro ;limpia pantalla
          print skip
@@ -172,4 +176,124 @@ Local ok,fin
             ;Salimos de la macro.
       
             
+endm
+
+concatenarCadena macro origen,destino,indiceEscritura
+;xor si,si  ; => mov si, 0  reinica el contador
+LOCAL ObtenerCaracter,  termino
+    ;Limpiamos el indice si y di 
+    mov si,0
+    mov di,0
+    ;Extraemos de la pila el valor y lo guardamos en si
+    pop si
+
+    ;En base a la cadena que queremos guardar extraemos caracter por caracter
+    ;Y lo guardamos en el destino
+    ;Esto es como realizar un += para que podamos concatenar cadenas
+    ObtenerCaracter:
+        cmp origen[di], 36
+        je termino
+        mov al, origen[di]
+        mov destino[si], al
+        inc si
+        inc di
+        jmp ObtenerCaracter 
+    termino:
+        ;Como ya termino guardamos el indice si en la pila
+        push si
+        ;Limpiamos el registro di (Les recomiendo si ya no utilizan un registro limpienlo).
+        mov di,0
+        
+endm
+
+;La utilizamos para limpiar alguna variables con cierto caracter que se envie
+limpiar macro buffer, numbytes, caracter
+LOCAL Repetir
+    ;Limpieza de los registros
+	xor si,si
+	xor cx,cx
+    ;Cargamos el numero de repeticiones que queremos que realice loop
+	mov	cx,numbytes
+
+	Repetir:
+        ;Movemos el caracter que ingresamos en la posicion especifica de la cadena
+		mov buffer[si], caracter
+        ;Aumentamos el indice si
+		inc si
+        ;Repetimos se va a repetir en base al numero que tenga cx, en este caso lo que se ingrese
+        ;por el valor de numbytes
+		Loop Repetir
+endm
+
+;Interrupcion para cerrar el handler
+cerrar macro handler
+	
+	mov ah,3eh
+	mov bx, handler
+	int 21h
+	jc Error2
+	mov handler,ax
+
+endm
+
+;Interrupccion para crear un archivo
+crear macro buffer, handler
+    xor ax,ax
+    xor bx,bx
+    xor cx,cx
+    xor dx,dx
+	
+	mov ah,3ch
+	mov cx,00h
+	lea dx,buffer
+	int 21h
+	jc Error4
+	mov handler, ax
+
+endm
+
+;Interrupcion para escribir en un archivo (El handle es como el archivo abierto)
+escribir macro handler, buffer, numbytes
+    xor ax,ax
+    xor bx,bx
+    xor cx,cx
+    xor dx,dx
+
+
+	mov ah, 40h
+	mov bx, handler
+	mov cx, numbytes
+	lea dx, buffer
+	int 21h
+	jc Error3
+
+endm
+
+;Interrupcion para abrir archivos
+abrir macro buffer,handler
+
+	mov ah,3dh
+	mov al,02h
+	lea dx,buffer
+	int 21h
+	jc Error1
+	mov handler,ax
+
+endm
+
+;Interrupcion para leer archivos
+leer macro handler,buffer, numbytes
+	xor ax,ax
+    xor bx,bx
+    xor cx,cx
+    xor dx,dx
+
+
+	mov ah,3fh
+	mov bx,handler
+	mov cx,numbytes
+	lea dx,buffer ; mov dx,offset buffer 
+	int 21h
+	jc  Error5
+
 endm
