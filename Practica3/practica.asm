@@ -1,5 +1,48 @@
 ;llamada a macros
 include macros1.asm 
+
+ImprimirTablero macro arreglo 
+    LOCAL Mientras, FinMientras, ImprimirSalto
+    push si
+    push di
+
+    xor si,si
+    mov si,1 ;source index  = 1 Para que empiece a contar desde 1
+    xor di,di; destination index = 0
+    print tabhead
+    
+    print skip
+	Mientras:
+		cmp si,43 ;if si==42 si el actual tiene el numero 43
+		je FinMientras				; while(si<=42){}
+			xor ax,ax               ; limpia ax
+			mov al, arreglo[si]     ; actual pasa al registro bajo al
+			mov aux, al 		   ; print(arreglo[si])
+			print aux               ; imprime el valor de aux (se quema antes)
+
+			cmp di,6    
+			je ImprimirSalto	 ; if(di == 6){ Imprimir salto}
+
+
+			mov aux,32   		; else{print(" ")
+			print aux
+			
+
+			inc di				;di++
+			inc si   			; si++}
+		jmp Mientras
+
+	ImprimirSalto:
+		xor di,di 			; di = 0
+		print skip			;print("/n")
+		inc si  			; si++
+		jmp Mientras
+
+	FinMientras:
+pop di
+pop si
+endm
+
 .model Large 
 ; -------------- SEGMENTO DE PILA -----------------
 .stack 
@@ -15,6 +58,11 @@ conver db 100 dup('$') , '$'
 nameJugador1 db 50 dup('$') , '$'
 nameJugador2 db 50 dup('$') , '$'
 
+; variable del tablero
+tabhead db 0ah,0dh, " A S D F J K L" , '$'
+tab db 42 dup('$') , '$'
+
+aux db 0, '$'
 
 ;Maneja la entrada del teclado
 handlerentrada dw ?
@@ -164,7 +212,6 @@ mov es,ax
 
 
     jugadorvsjugador:
-
         print ingreseName1
         ObtenerTexto nameJugador1
 
@@ -174,9 +221,64 @@ mov es,ax
         ObtenerTexto nameJugador2
 
         print msjInicialJuego
+        
+        ;fila1
+        mov tab[1],61
+        mov tab[2],61
+        mov tab[3],61
+        mov tab[4],61
+        mov tab[5],61
+        mov tab[6],61
+        mov tab[7],61
+
+        mov tab[8],61
+        mov tab[9],61
+        mov tab[10],61
+        mov tab[11],61
+        mov tab[12],61
+        mov tab[13],61
+        mov tab[14],61
+
+        mov tab[15],61
+        mov tab[16],61
+        mov tab[17],61
+        mov tab[18],61
+        mov tab[19],61
+        mov tab[20],61
+        mov tab[21],61
+
+        mov tab[22],61
+        mov tab[23],61
+        mov tab[24],61
+        mov tab[25],61
+        mov tab[26],61
+        mov tab[27],61
+        mov tab[28],61
+
+        mov tab[29],61
+        mov tab[30],61
+        mov tab[31],61
+        mov tab[32],61
+        mov tab[33],61
+        mov tab[34],61
+        mov tab[35],61
+
+        mov tab[36],61
+        mov tab[37],61
+        mov tab[38],61
+        mov tab[39],61
+        mov tab[40],61
+        mov tab[41],61
+        mov tab[42],61
+
+        
+        ImprimirTablero tab
 
 
-        jmp menu
+        
+
+
+        ;jmp menu
 
 
         

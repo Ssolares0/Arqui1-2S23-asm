@@ -1,3 +1,5 @@
+
+
 print macro cadena ;imprimir cadenas
     mov ah,09h ;Numero de funcion para imprimir cadena en pantalla
 	mov dx, @data ;con esto le decimos que nuestrfo dato se encuentra en la sección data
@@ -5,6 +7,8 @@ print macro cadena ;imprimir cadenas
 	mov dx,offset cadena ;especificamos el largo de la cadena, con la instrucción offset
 	int 21h  ;ejecutamos la interrupción
 endm 
+
+
 
 close macro  ;cerrar el programa
     mov ah, 4ch ;Numero de función que finaliza el programa
@@ -297,3 +301,4 @@ leer macro handler,buffer, numbytes
 	jc  Error5
 
 endm
+
